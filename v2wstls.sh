@@ -1,26 +1,28 @@
-
+#!/bin/bash
 # Install Nginx
 apt-get update
 apt-get install nginx -y
 mkdir -p /etc/nginx/ssl
 openssl dhparam -out /etc/nginx/ssl/dhparam.pem 2048
-nano /etc/nginx/sites-enabled/apia.ga.conf
 
-server
+echo && read -e -p "请输入域名: " web1
+echo && read -e -p "请输入要反向代理的网址: " web2
+
+echo -e "server
     {
         listen 80;
         #listen [::]:80;
-        server_name apia.ga ;
-        return 301 https://apia.ga$request_uri;
+        server_name $web1 ;
+        return 301 https://$web1\$request_uri;
 	}
 server
     {
         listen 443 ssl http2;
         #listen [::]:443 ssl http2;
-        server_name apia.ga ;
+        server_name $web1 ;
         ssl on;
-        ssl_certificate /etc/nginx/ssl/apia.ga/fullchain.cer;
-        ssl_certificate_key /etc/nginx/ssl/apia.ga/privkey.key;
+        ssl_certificate /etc/nginx/ssl/$web1/fullchain.cer;
+        ssl_certificate_key /etc/nginx/ssl/$web1/privkey.key;
         ssl_session_timeout 5m;
         ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
         ssl_prefer_server_ciphers on;
@@ -32,8 +34,8 @@ server
 	location / {
 	proxy_set_header X-Real-IP $remote_addr;
 	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-	proxy_pass https://acca.ga/;
-  sub_filter 'acca.ga' 'apia.ga';
+	proxy_pass https://$web2/;
+    sub_filter '$web2' '$web1';
 	location /phpmyadmin/ {
           proxy_redirect off;
           #proxy_pass http://127.0.0.1:10000;
@@ -47,80 +49,78 @@ server
           }
         }
         }
-    }
+    }" >/etc/nginx/sites-enabled/apia.ga.conf
 
-Install acme.sh
+# Iinstall acme.sh
+
 apt-get install socat -y
 apt-get install curl -y
-curl  https://get.acme.sh | sh
+curl https://get.acme.sh | sh
 cd /root/.acme.sh
 
-Apply for Cert
-acme.sh  --issue  -d apia.ga  --alpn
+# Apply for Cert
+acme.sh  --issue  -d $web1  --alpn
+mkdir -p /etc/nginx/ssl/$web1
 
-mkdir -p /etc/nginx/ssl/apia.ga
-
-acme.sh --install-cert -d apia.ga \
---key-file       /etc/nginx/ssl/apia.ga/privkey.key  \
---fullchain-file /etc/nginx/ssl/apia.ga/fullchain.cer \
+acme.sh --install-cert -d $web1 \
+--key-file       /etc/nginx/ssl/$web1/privkey.key  \
+--fullchain-file /etc/nginx/ssl/$web1/fullchain.cer \
 --reloadcmd     "service nginx force-reload"
 
-Install V2ray
+# Install V2ray
 
 bash <(curl -L -s https://install.direct/go.sh)
-nano /etc/v2ray/config.json
+uuid=$(cat /proc/sys/kernel/random/uuid)
 
-{
-    "log": {
-                "access": "/var/log/v2ray/access.log",
-                "error": "/var/log/v2ray/error.log",
-        "loglevel": "info"
+echo -e "{
+    \"log\": {
+                \"access\": \"/var/log/v2ray/access.log\",
+                \"error\": \"/var/log/v2ray/error.log\",
+        \"loglevel\": \"info\"
     },
-    "inbound": {
-        "port": 10000,
-        "protocol": "vmess",
-        "allocate": {
-            "strategy": "always"
+    \"inbound\": {
+        \"port\": 10000,
+        \"protocol\": \"vmess\",
+        \"allocate\": {
+            \"strategy\": \"always\"
         },
-        "settings": {
-            "clients": [{
-                "id": "3418aa46-e233-48fc-8468-b3ec7e98bb52",
-                "level": 1,
-                "alterId": 64,
+        \"settings\": {
+            \"clients\": [{
+                \"id\": \"$uuid\",
+                \"level\": 1,
+                \"alterId\": 64,
             }]
         },
-        "streamSettings": {
-            "network": "ws",
+        \"streamSettings\": {
+            \"network\": \"ws\",
             }
-        "sniffing": {
-                "enabled": true,
-                "destOverride": [
-                        "http",
-                        "tls"
+        \"sniffing\": {
+                \"enabled\": true,
+                \"destOverride\": [
+                        \"http\",
+                        \"tls\"
                 ]
         }
 
     },
-    "outbound": {
-        "protocol": "freedom",
-        "settings": {}
+    \"outbound\": {
+        \"protocol\": \"freedom\",
+        \"settings\": {}
     },
-    "outboundDetour": [{
-        "protocol": "blackhole",
-        "settings": {},
-        "tag": "blocked"
+    \"outboundDetour\": [{
+        \"protocol\": \"blackhole\",
+        \"settings\": {},
+        \"tag\": \"blocked\"
     }],
-    "routing": {
-        "strategy": "rules",
-        "settings": {
-            "rules": [{
-                "type": "field",
-                "ip": ["geoip:private"],
-                "outboundTag": "blocked"
+    \"routing\": {
+        \"strategy\": \"rules\",
+        \"settings\": {
+            \"rules\": [{
+                \"type\": \"field\",
+                \"ip\": [\"geoip:private\"],
+                \"outboundTag\": \"blocked\"
             }]
         }
     }
-}
+}" >/etc/v2ray/config.json
 
-Replace the ID with below Website
-https://www.uuidgenerator.net/
