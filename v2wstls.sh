@@ -26,25 +26,25 @@ server
         ssl_session_timeout 5m;
         ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
         ssl_prefer_server_ciphers on;
-        ssl_ciphers "EECDH+CHACHA20:EECDH+CHACHA20-draft:EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5";
+        ssl_ciphers \"EECDH+CHACHA20:EECDH+CHACHA20-draft:EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5\";
         ssl_session_cache builtin:1000 shared:SSL:10m;
         # openssl dhparam -out /etc/nginx/ssl/dhparam.pem 2048
         ssl_dhparam /etc/nginx/ssl/dhparam.pem;
 	access_log off;
 	location / {
-	proxy_set_header X-Real-IP $remote_addr;
-	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	proxy_set_header X-Real-IP \$remote_addr;
+	proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
 	proxy_pass https://$web2/;
     sub_filter '$web2' '$web1';
 	location /phpmyadmin/ {
           proxy_redirect off;
           #proxy_pass http://127.0.0.1:10000;
           proxy_http_version 1.1;
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection "upgrade";
-          proxy_set_header Host $http_host;
+          proxy_set_header Upgrade \$http_upgrade;
+          proxy_set_header Connection \"upgrade\";
+          proxy_set_header Host \$http_host;
           proxy_intercept_errors on;
-          if ($http_upgrade = "websocket" ){
+          if (\$http_upgrade = \"websocket\" ){
              proxy_pass http://127.0.0.1:10000;
           }
         }
@@ -60,9 +60,8 @@ cd /root/.acme.sh
 
 # Apply for Cert
 ./acme.sh  --issue  -d $web1  --alpn
-
-# Install Certificate
 mkdir -p /etc/nginx/ssl/$web1
+
 ./acme.sh --install-cert -d $web1 \
 --key-file       /etc/nginx/ssl/$web1/privkey.key  \
 --fullchain-file /etc/nginx/ssl/$web1/fullchain.cer \
