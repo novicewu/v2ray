@@ -138,6 +138,8 @@ echo -e "{
         }
     }
 }" >/etc/v2ray/config.json
+service v2ray start
+service v2ray status
 
 # Clients Config Information 
 echo -e "V2ray配置信息:
