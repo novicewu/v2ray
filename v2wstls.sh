@@ -1,7 +1,7 @@
-Install Nginx
+
+# Install Nginx
 apt-get update
 apt-get install nginx -y
-
 mkdir -p /etc/nginx/ssl
 openssl dhparam -out /etc/nginx/ssl/dhparam.pem 2048
 nano /etc/nginx/sites-enabled/apia.ga.conf
