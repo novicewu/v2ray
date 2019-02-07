@@ -1,4 +1,13 @@
 #!/bin/bash
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+export PATH
+
+#=================================================
+#   System Required: CentOS 6/7,Debian 8/9,Ubuntu 16+
+#   Description: V2ray Nginx+TLS+ws+Web
+#   Version: 1.0.0
+#   Author: Novice
+#=================================================
 
 # Define Color
 Green_font_prefix="\033[32m"
