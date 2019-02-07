@@ -1,12 +1,22 @@
 #!/bin/bash
+
+# Define Color
+Green_font_prefix="\033[32m"
+Red_font_prefix="\033[31m"
+Green_background_prefix="\033[42;37m"
+Red_background_prefix="\033[41;37m" 
+Font_color_suffix="\033[0m"
+
+#Define Variables
+echo && read -e -p "请输入域名: " web1
+echo && read -e -p "请输入要反向代理的网址: " web2
+uuid=$(cat /proc/sys/kernel/random/uuid)
+
 # Install Nginx
 apt-get update
 apt-get install nginx -y
 mkdir -p /etc/nginx/ssl
 openssl dhparam -out /etc/nginx/ssl/dhparam.pem 2048
-
-echo && read -e -p "请输入域名: " web1
-echo && read -e -p "请输入要反向代理的网址: " web2
 
 echo -e "server
     {
@@ -52,25 +62,23 @@ server
     }" >/etc/nginx/sites-enabled/apia.ga.conf
 
 # Iinstall acme.sh
-
 apt-get install socat -y
 apt-get install curl -y
 curl https://get.acme.sh | sh
+
+# Apply for Certificate
 cd /root/.acme.sh
-
-# Apply for Cert
 ./acme.sh  --issue  -d $web1  --alpn
-mkdir -p /etc/nginx/ssl/$web1
 
+# Install Certificate
+mkdir -p /etc/nginx/ssl/$web1
 ./acme.sh --install-cert -d $web1 \
 --key-file       /etc/nginx/ssl/$web1/privkey.key  \
 --fullchain-file /etc/nginx/ssl/$web1/fullchain.cer \
 --reloadcmd     "service nginx force-reload"
 
 # Install V2ray
-
 bash <(curl -L -s https://install.direct/go.sh)
-uuid=$(cat /proc/sys/kernel/random/uuid)
 
 echo -e "{
     \"log\": {
@@ -122,3 +130,14 @@ echo -e "{
     }
 }" >/etc/v2ray/config.json
 
+# Clients Config Information 
+echo -e "V2ray配置信息:
+${Red_font_prefix}address:${Font_color_suffix}    ${Green_font_prefix}$web1${Font_color_suffix}
+${Red_font_prefix}port:${Font_color_suffix}       ${Green_font_prefix}443${Font_color_suffix}
+${Red_font_prefix}id:${Font_color_suffix}         ${Green_font_prefix}$uuid${Font_color_suffix}
+${Red_font_prefix}alterId:${Font_color_suffix}    ${Green_font_prefix}64${Font_color_suffix}
+${Red_font_prefix}security:${Font_color_suffix}   ${Green_font_prefix}chacha20-poly1305${Font_color_suffix}
+${Red_font_prefix}network:${Font_color_suffix}    ${Green_font_prefix}ws${Font_color_suffix}
+${Red_font_prefix}path:${Font_color_suffix}       ${Green_font_prefix}/phpmyadmin/${Font_color_suffix}
+${Red_font_prefix}tls:${Font_color_suffix}        ${Green_font_prefix}on${Font_color_suffix}"
+echo""
