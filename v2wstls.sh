@@ -59,10 +59,11 @@ curl https://get.acme.sh | sh
 cd /root/.acme.sh
 
 # Apply for Cert
-acme.sh  --issue  -d $web1  --alpn
-mkdir -p /etc/nginx/ssl/$web1
+./acme.sh  --issue  -d $web1  --alpn
 
-acme.sh --install-cert -d $web1 \
+# Install Certificate
+mkdir -p /etc/nginx/ssl/$web1
+./acme.sh --install-cert -d $web1 \
 --key-file       /etc/nginx/ssl/$web1/privkey.key  \
 --fullchain-file /etc/nginx/ssl/$web1/fullchain.cer \
 --reloadcmd     "service nginx force-reload"
