@@ -3,7 +3,7 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
 #=================================================
-#   System Required: Debian 9
+#   System Required: Debian 9, Ubuntu 18.04
 #   Description: V2ray Nginx+TLS+ws+Web
 #   Version: 1.0.0
 #   Author: Novice
