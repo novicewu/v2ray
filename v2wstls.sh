@@ -5,7 +5,7 @@ export PATH
 #=================================================
 #   System Required: Debian 9, Ubuntu 18.04
 #   Description: V2ray Nginx+TLS+ws+Web
-#   Version: 1.0.0
+#   Version: 1.0.1
 #   Author: Novice
 #=================================================
 
@@ -85,6 +85,10 @@ mkdir -p /etc/nginx/ssl/$web1
 --key-file       /etc/nginx/ssl/$web1/privkey.key  \
 --fullchain-file /etc/nginx/ssl/$web1/fullchain.cer \
 --reloadcmd     "service nginx force-reload"
+
+# Calibrate Time
+rm -rf /etc/localtime
+ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 # Install V2ray
 bash <(curl -L -s https://install.direct/go.sh)
